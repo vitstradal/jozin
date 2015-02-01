@@ -1,0 +1,18 @@
+= JOFA =
+
+Java obfuscation first aid
+
+== CREDITS ==
+
+  * JODE based on JODE by Jochen Hoenicke <Jochen.Hoenicke@Informatik.Uni-Oldenburg.DE>
+  * gnu.getopt https://github.com/arenn/java-getopt
+
+== INSTALL  ==
+
+  * obtain (git clone )
+  * make (javac needed)
+
+== RUN ==
+
+
+
