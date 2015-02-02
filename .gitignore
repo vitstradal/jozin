@@ -1,2 +1,7 @@
 *.class
 *.swp
+/tags
+/out
+/out.*
+/*.jos
+/tmp.*

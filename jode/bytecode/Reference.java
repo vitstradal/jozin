@@ -24,7 +24,6 @@ import java.util.Iterator;
 /**
  * This class represents a field or method reference.
  */
-@SuppressWarnings("unchecked")
 public class Reference {
     /**
      * A reference consists of a class name, a member name and a type.

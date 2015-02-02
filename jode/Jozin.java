@@ -1,4 +1,4 @@
-/* Main Copyright (C) 1998-2002 Jochen Hoenicke.
+/* Main Copyright (C) vitas
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,9 @@
  * $Id: Main.java.in,v 1.4.2.3 2002/05/28 17:34:14 hoenicke Exp $
  */
 
-package jode.obfuscator;
+package jode;
+import jode.obfuscator.*;
+import jode.obfuscator.modules.*;
 import jode.bytecode.ClassInfo;
 import jode.bytecode.SearchPath;
 import jode.GlobalOptions;
@@ -31,9 +33,11 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Collection;
 import java.util.Random;
 
-public class Main {
+public class Jozin {
     public static boolean swapOrder   = false;
 
     public static final int OPTION_STRONGOVERLOAD  = 0x0001;
@@ -94,17 +98,23 @@ public class Main {
 	return bundle;
     }
 
-    public static void setClassBundle(ClassBundle b) {
-       bundle = b;
-    }
 
     public static void main(String[] params) {
 	if (params.length == 0) {
 	    usage();
 	    return;
 	}
-	String cp = null, dest = null;
+	String cp = null;
+        String dest = "out.jar";
+        String dir = null;
+        String load = "jode.*";
+        String revtable = "out.tbl";
         
+
+        Renamer renamer = new ListRenamer();
+        ConstantAnalyzer analyzer = new ConstantAnalyzer();
+        //post = new LocalOptimizer, new RemovePopAnalyzer
+
 	GlobalOptions.err.println(GlobalOptions.copyright);
 	bundle = new ClassBundle();
 	boolean errorInParams = false;
@@ -121,11 +131,20 @@ public class Main {
 	    case 'V':
 		GlobalOptions.err.println(GlobalOptions.version);
 		break;
+	    case 'l':
+		load = g.getOptarg();
+		break;
+	    case 'r':
+		revtable = g.getOptarg();
+		break;
 	    case 'c':
 		cp = g.getOptarg();
 		break;
 	    case 'd':
 		dest = g.getOptarg();
+		break;
+	    case 'x':
+		dir = g.getOptarg();
 		break;
 	    case 'v': {
 		String arg = g.getOptarg();
@@ -158,39 +177,44 @@ public class Main {
 	if (errorInParams)
 	    return;
 
-        if (g.getOptind() != params.length - 1) {
-            GlobalOptions.err.println("You must specify exactly one script.");
-            return;
-        }
-
-
-	try {
-	    String filename = params[g.getOptind()];
-	    ScriptParser parser = new ScriptParser
-		(filename.equals("-") 
-		 ? new InputStreamReader(System.in)
-		 : new FileReader(filename));
-	    parser.parseOptions(bundle);
-	} catch (IOException ex) {
-	    GlobalOptions.err.println
-		("IOException while reading script file.");
-	    ex.printStackTrace(GlobalOptions.err);
-	    return;
-	} catch (ParseException ex) {
-	    GlobalOptions.err.println("Syntax error in script file: ");
-	    GlobalOptions.err.println(ex.getMessage());
-	    if (GlobalOptions.verboseLevel > 5)
-		ex.printStackTrace(GlobalOptions.err);
-	    return;
-	}
-
 	// Command Line overwrites script options:
 	if (cp != null)
 	    bundle.setOption("classpath", Collections.singleton(cp));
 	if (dest != null)
 	    bundle.setOption("dest", Collections.singleton(dest));
 
-	bundle.run();
+	if (load != null)
+	    bundle.setOption("load", Collections.singleton(load));
+
+	if (revtable != null)
+	    bundle.setOption("revtable", Collections.singleton(revtable));
+
+	if (renamer != null)
+	    bundle.setOption("renamer", Collections.singleton(renamer));
+
+	if (analyzer != null)
+	    bundle.setOption("analyzer", Collections.singleton(analyzer));
+
+	Collection post = new LinkedList();
+        post.add(new LocalOptimizer());
+        post.add(new RemovePopAnalyzer());
+        bundle.setOption("post", post);
+
+        Collection strip = new LinkedList();
+        strip.add("unreach");
+        strip.add("lvt");
+        strip.add("inner");
+        bundle.setOption("strip", strip);
+
+        Collection preserve = new LinkedList();
+        WildCard wc = new WildCard();
+        wc.setOption("value",  Collections.singleton("org.myorg.ApplicationClass.main.*"));
+        preserve.add(wc);
+        bundle.setOption("preserve", preserve);
+
+        jode.obfuscator.Main.setClassBundle(bundle);
+
+        bundle.run();
     }
 }
 
