@@ -19,10 +19,22 @@
 
 package jode;
 import jode.obfuscator.*;
+import jode.decompiler.*;
 import jode.obfuscator.modules.*;
 import jode.bytecode.ClassInfo;
 import jode.bytecode.SearchPath;
 import jode.GlobalOptions;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.zip.ZipOutputStream;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipEntry;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import gnu.getopt.LongOpt;
 import gnu.getopt.Getopt;
@@ -46,6 +58,8 @@ public class Jozin {
 
     private static final LongOpt[] longOptions = new LongOpt[] {
 	new LongOpt("cp", LongOpt.REQUIRED_ARGUMENT, null, 'c'),
+	new LongOpt("src", LongOpt.REQUIRED_ARGUMENT, null, 's'),
+	new LongOpt("load", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
 	new LongOpt("classpath", LongOpt.REQUIRED_ARGUMENT, null, 'c'),
 	new LongOpt("destpath", LongOpt.REQUIRED_ARGUMENT, null, 'd'),
 	new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
@@ -76,21 +90,15 @@ public class Jozin {
 
     public static void usage() {
 	PrintWriter err = GlobalOptions.err;
-        err.println("usage: jode.Obfuscator flags* script");
-	err.println("  -h, --help           "+
-		    "show this information.");
-	err.println("  -V, --version        "+
-		    "output version information and exit.");
-	err.println("  -v, --verbose        "+
-		    "be verbose (multiple times means more verbose).");
-	err.println("  -c, --classpath <path> "+
-		    "search for classes in specified classpath.");
-	err.println("                       "+
-		    "The directories should be separated by ','.");
-	err.println("  -d, --dest <dir>     "+
-		    "write decompiled files to disk into directory destdir.");
-	err.println("  -D, --debug=...      "+
-		    "use --debug=help for more information.");
+        err.println("usage:java  jode.Jozin -c in.jar [opts]");
+	err.println("  -h, --help           show this information.");
+	err.println("  -V, --version        output version information and exit.");
+	err.println("  -v, --verbose        be verbose (multiple times means more verbose).");
+	err.println("  -c, --classpath <path> search for classes in specified classpath.");
+	err.println("                       The directories should be separated by ','.");
+	err.println("  -d, --dest <dir>     write decompiled files to disk into directory destdir.");
+	err.println("  -s, --src <dir>      write decompiled sources directory.");
+	err.println("  -D, --debug=...      use --debug=help for more information.");
     }
 
 
@@ -109,7 +117,7 @@ public class Jozin {
         String dir = null;
         String load = "jode.*";
         String revtable = "out.tbl";
-        
+        String src_dir = "out";
 
         Renamer renamer = new ListRenamer();
         ConstantAnalyzer analyzer = new ConstantAnalyzer();
@@ -118,7 +126,7 @@ public class Jozin {
 	GlobalOptions.err.println(GlobalOptions.copyright);
 	bundle = new ClassBundle();
 	boolean errorInParams = false;
-	Getopt g = new Getopt("jode.obfuscator.Main", params, "hVvc:d:D:",
+	Getopt g = new Getopt("jode.obfuscator.Main", params, "hVvc:d:D:s:l:",
 			      longOptions, true);
 	for (int opt = g.getopt(); opt != -1; opt = g.getopt()) {
 	    switch(opt) {
@@ -130,6 +138,9 @@ public class Jozin {
 		break;
 	    case 'V':
 		GlobalOptions.err.println(GlobalOptions.version);
+		break;
+	    case 's':
+		src_dir = g.getOptarg();
 		break;
 	    case 'l':
 		load = g.getOptarg();
@@ -215,6 +226,39 @@ public class Jozin {
         jode.obfuscator.Main.setClassBundle(bundle);
 
         bundle.run();
+
+
+        String classPath = System.getProperty("java.class.path")
+	    .replace(File.pathSeparatorChar, Decompiler.altPathSeparatorChar);
+	String bootClassPath = System.getProperty("sun.boot.class.path");
+	if (bootClassPath != null)
+	    classPath += Decompiler.altPathSeparatorChar
+		+ bootClassPath.replace(File.pathSeparatorChar, Decompiler.altPathSeparatorChar);
+
+        if( src_dir != null ) {
+	     GlobalOptions.err.println("writing src:" + src_dir);
+             try {
+	            int importPackageLimit = ImportHandler.DEFAULT_PACKAGE_LIMIT;
+                    int importClassLimit = ImportHandler.DEFAULT_CLASS_LIMIT;;
+
+		    ClassInfo.setClassPath(dest + Decompiler.altPathSeparatorChar + classPath);
+
+	            ImportHandler imports = new ImportHandler(importPackageLimit, importClassLimit);
+		    Enumeration eenum = new ZipFile(dest).entries();
+		    while (eenum.hasMoreElements()) {
+			String entry = ((ZipEntry) eenum.nextElement()).getName();
+			if (entry.endsWith(".class")) {
+			    entry = entry.substring(0, entry.length() - 6).replace('/', '.');
+			    jode.decompiler.Main.decompileClass(entry, null, src_dir, null, imports);
+			}
+		    }
+		    //ClassInfo.setClassPath(classPath);
+	     } catch (IOException ex) {
+		GlobalOptions.err.println
+		    ("Can't read zip file " + dest + ".");
+		ex.printStackTrace(GlobalOptions.err);
+	    }
+        }
     }
 }
 

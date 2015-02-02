@@ -14,5 +14,6 @@ Slim way from java obfuscation swamp.
 
 == RUN ==
 
-
-
+```
+java jode.Jozin -c tmp.jar
+```
