@@ -653,7 +653,7 @@ public class ClassInfo extends BinaryInfo {
 		("Can't read class " + name + ", types may be incorrect. ("
 		 + ex.getClass().getName()
 		 + (message != null ? ": " + message : "") + ")");
-	    ex.printStackTrace(GlobalOptions.err);
+	    //ex.printStackTrace(GlobalOptions.err);
 	    
 	    if ((howMuch & HIERARCHY) != 0) {
 		modifiers = Modifier.PUBLIC;

@@ -485,20 +485,20 @@ public class ClassBundle implements OptionHandler {
 	    runtime.runFinalization();
 	    free = runtime.freeMemory();
 	} while (free < last);
-	System.err.println("used before: "+(runtime.totalMemory()- free));
+	//System.err.println("used before: "+(runtime.totalMemory()- free));
 
-	GlobalOptions.err.println("Loading and preserving classes");
+	//GlobalOptions.err.println("Loading and preserving classes");
 
 	long time = System.currentTimeMillis();
 	basePackage.loadMatchingClasses(loading);
 	basePackage.applyPreserveRule(preserving);
-	System.err.println("Time used: "+(System.currentTimeMillis() - time));
+	//System.err.println("Time used: "+(System.currentTimeMillis() - time));
 
 
-	GlobalOptions.err.println("Computing reachability");
+	//GlobalOptions.err.println("Computing reachability");
 	time = System.currentTimeMillis();
 	analyze();
-	System.err.println("Time used: "+(System.currentTimeMillis() - time));
+	//System.err.println("Time used: "+(System.currentTimeMillis() - time));
 
 	free = runtime.freeMemory();
 	do {
@@ -507,10 +507,10 @@ public class ClassBundle implements OptionHandler {
 	    runtime.runFinalization();
 	    free = runtime.freeMemory();
 	} while (free < last);
-	System.err.println("used after analyze: "
-			   + (runtime.totalMemory() - free));
+	//System.err.println("used after analyze: "
+	//		   + (runtime.totalMemory() - free));
 
-	GlobalOptions.err.println("Renaming methods");
+	//GlobalOptions.err.println("Renaming methods");
 	time = System.currentTimeMillis();
 	if (inTableFile != null)
             readTable();
@@ -519,12 +519,12 @@ public class ClassBundle implements OptionHandler {
             writeTable();
         if (outRevTableFile != null)
             writeRevTable();
-	System.err.println("Time used: "+(System.currentTimeMillis() - time));
+	//System.err.println("Time used: "+(System.currentTimeMillis() - time));
 
-	GlobalOptions.err.println("Transforming the classes");
+	//GlobalOptions.err.println("Transforming the classes");
 	time = System.currentTimeMillis();
 	doTransformations();
-	System.err.println("Time used: "+(System.currentTimeMillis() - time));
+	//System.err.println("Time used: "+(System.currentTimeMillis() - time));
 
 	free = runtime.freeMemory();
 	do {
@@ -533,12 +533,12 @@ public class ClassBundle implements OptionHandler {
 	    runtime.runFinalization();
 	    free = runtime.freeMemory();
 	} while (free < last);
-	System.err.println("used after transform: "
-			   + (runtime.totalMemory() - free));
+	//System.err.println("used after transform: "
+	//		   + (runtime.totalMemory() - free));
 
-	GlobalOptions.err.println("Writing new classes");
+	//GlobalOptions.err.println("Writing new classes");
 	time = System.currentTimeMillis();
         storeClasses();
-	System.err.println("Time used: "+(System.currentTimeMillis() - time));
+	//System.err.println("Time used: "+(System.currentTimeMillis() - time));
     }
 }

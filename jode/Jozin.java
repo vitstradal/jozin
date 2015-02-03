@@ -117,13 +117,13 @@ public class Jozin {
         String dir = null;
         String load = "jode.*";
         String revtable = "out.tbl";
-        String src_dir = "out";
+        String src_dir = null;
 
         Renamer renamer = new ListRenamer();
         ConstantAnalyzer analyzer = new ConstantAnalyzer();
         //post = new LocalOptimizer, new RemovePopAnalyzer
 
-	GlobalOptions.err.println(GlobalOptions.copyright);
+	//GlobalOptions.err.println(GlobalOptions.copyright);
 	bundle = new ClassBundle();
 	boolean errorInParams = false;
 	Getopt g = new Getopt("jode.obfuscator.Main", params, "hVvc:d:D:s:l:",
@@ -254,9 +254,8 @@ public class Jozin {
 		    }
 		    //ClassInfo.setClassPath(classPath);
 	     } catch (IOException ex) {
-		GlobalOptions.err.println
-		    ("Can't read zip file " + dest + ".");
-		ex.printStackTrace(GlobalOptions.err);
+		GlobalOptions.err.println("Can't read zip file " + dest + ".");
+		//ex.printStackTrace(GlobalOptions.err);
 	    }
         }
     }

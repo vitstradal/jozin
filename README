@@ -1,8 +1,12 @@
 = JOZIN =
 
+Java ObfuZcatIoN  first aid -- replace obfucated identifiers with dictionary words.
+
 Slim way from java obfuscation swamp.
 
 == CREDITS ==
+
+Completely based on JODE, added two classes and dictionaries to make things easier.
 
   * JODE based on JODE by Jochen Hoenicke <Jochen.Hoenicke@Informatik.Uni-Oldenburg.DE>
   * gnu.getopt https://github.com/arenn/java-getopt

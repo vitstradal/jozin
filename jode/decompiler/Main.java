@@ -163,7 +163,7 @@ public class Main extends Options {
 	    }
 	    if (skipClass(clazz))
 		return;
-	    
+
 	    String filename = 
 		className.replace('.', File.separatorChar)+".java";
 	    if (destZip != null) {
@@ -182,11 +182,11 @@ public class Main extends Options {
 		     imports, false);
 	    }
 
-	    GlobalOptions.err.println(className);
-	    
+	    //GlobalOptions.err.println(className);
+
 	    ClassAnalyzer clazzAna = new ClassAnalyzer(clazz, imports);
 	    clazzAna.dumpJavaFile(writer);
-		
+
 	    if (destZip != null) {
 		writer.flush();
 		destZip.closeEntry();

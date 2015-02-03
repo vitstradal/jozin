@@ -20,16 +20,18 @@ package jode.obfuscator.modules;
 import jode.obfuscator.*;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.ArrayList;
+import java.io.*;
 import java.lang.UnsupportedOperationException;
 
 public class ListRenamer implements Renamer, OptionHandler {
     String nouns[] = {
       "ahoj", "penize", "kolo", "autobus", "kocicka", "pejsek", "manicka", "kaficko", "chleba", "strom", "cesta", "slunicko", "beruska",
-      "zelenina", "ovoce", "brioska"
+      "zelenina", "ovoce", "brioska", "lampa", "maslo"
     };
 
     String adjs[] = {
-      "red", "quick", "small", "green", "full"
+      "red", "quick", "small", "green", "full", "big", "happy"
     };
 
     String javaKeywords[] = {
@@ -43,9 +45,32 @@ public class ListRenamer implements Renamer, OptionHandler {
 	"continue", "goto", "package", "this", "strictfp", "null",
 	"true", "false"
     };
+    ArrayList<String>[] dict;
 
 
     public ListRenamer() {
+      dict = new ArrayList[10];
+      dict[0] = read_dict("dict/pack");
+      dict[1] = read_dict("dict/class");
+      dict[2] = read_dict("dict/field");
+      dict[3] = read_dict("dict/meth");
+      dict[4] = read_dict("dict/loc");
+
+    }
+    private ArrayList<String> read_dict(String file ) {
+        ArrayList<String> d = new ArrayList<String>();
+        try {
+        BufferedReader br = new BufferedReader(new FileReader(file));
+          String line;
+          while ((line = br.readLine()) != null) {
+             line.replace("\n", "");
+             d.add(line);
+          }
+          br.close();
+        } catch(IOException ex) {
+          System.err.println(ex);
+        }
+        return  d;
     }
 
     public void setOption(String option, Collection values) {
@@ -72,10 +97,14 @@ public class ListRenamer implements Renamer, OptionHandler {
 	    identType = 3;
 
         // tripismene zacatecni jako  Class
-	else if (ident instanceof LocalIdentifier)
+	else if (ident instanceof LocalIdentifier) {
 	    identType = 4;
-	else
+            counts[identType] = 0;
+	} else {
+            System.err.println("bad agrument:" + ident.getClass().getName());
 	    throw new IllegalArgumentException(ident.getClass().getName());
+
+        }
 	return new Iterator() {
 	    char[] name = null;
 
@@ -83,11 +112,12 @@ public class ListRenamer implements Renamer, OptionHandler {
 		return true;
 	    }
 	    public Object next() {
+                ArrayList<String> ddict = dict[identType];
                 int count = counts[identType]++;
-                int idx = count % nouns.length;
-                int epoch = count / nouns.length;
+                int idx = count % ddict.size();
+                int epoch = count / ddict.size();
 
-                String ret =  nouns[idx];
+                String ret =  ddict.get(idx);
                 if( epoch > 0 ) {
                   ret += "" + epoch;
                 }
