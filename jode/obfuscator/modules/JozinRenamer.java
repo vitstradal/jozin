@@ -76,7 +76,7 @@ public class JozinRenamer implements Renamer, OptionHandler {
 
     static int counts[] = {0,0,0,0,0};
     public Iterator generateNames(Identifier ident) {
-	int identType;
+	final int identType;
 
         // mesto
 	if (ident instanceof PackageIdentifier)
@@ -119,7 +119,7 @@ public class JozinRenamer implements Renamer, OptionHandler {
                 String ret =  ddict.get(perm(idx, n));
                 if( epoch > 0 ) {
                   if( epoch - 1 < adjs.size() ) {
-                     ret =  adjs.get(perm(epoch - 1, adj.size()) + "_" + ret;
+                     ret =  adjs.get(perm(epoch - 1, adjs.size())) + "_" + ret;
                    }
                    else {
                      ret += epoch;
@@ -134,10 +134,11 @@ public class JozinRenamer implements Renamer, OptionHandler {
 	};
     }
 
-    int perm(int i, int n, int off=0) 
+    int perm(int i, int n)
     {
+      int off = 0;
       int p = 1021;
-      if( n == 0 ) { 
+      if( n == 0 ) {
         return i;
       }
       int idx = (i*p+off)%n;
