@@ -24,14 +24,10 @@ import java.util.ArrayList;
 import java.io.*;
 import java.lang.UnsupportedOperationException;
 
-public class ListRenamer implements Renamer, OptionHandler {
+public class JozinRenamer implements Renamer, OptionHandler {
     String nouns[] = {
       "ahoj", "penize", "kolo", "autobus", "kocicka", "pejsek", "manicka", "kaficko", "chleba", "strom", "cesta", "slunicko", "beruska",
       "zelenina", "ovoce", "brioska", "lampa", "maslo"
-    };
-
-    String adjs[] = {
-      "red", "quick", "small", "green", "full", "big", "happy"
     };
 
     String javaKeywords[] = {
@@ -46,15 +42,17 @@ public class ListRenamer implements Renamer, OptionHandler {
 	"true", "false"
     };
     ArrayList<String>[] dict;
+    ArrayList<String> adjs;
 
 
-    public ListRenamer() {
+    public JozinRenamer() {
       dict = new ArrayList[10];
       dict[0] = read_dict("dict/pack");
       dict[1] = read_dict("dict/class");
       dict[2] = read_dict("dict/field");
       dict[3] = read_dict("dict/meth");
       dict[4] = read_dict("dict/loc");
+      adjs = read_dict("dict/adjs");
 
     }
     private ArrayList<String> read_dict(String file ) {
@@ -114,12 +112,18 @@ public class ListRenamer implements Renamer, OptionHandler {
 	    public Object next() {
                 ArrayList<String> ddict = dict[identType];
                 int count = counts[identType]++;
-                int idx = count % ddict.size();
-                int epoch = count / ddict.size();
+                int n = ddict.size();
+                int idx = count % n;
+                int epoch = count / n;
 
-                String ret =  ddict.get(idx);
+                String ret =  ddict.get(perm(idx, n));
                 if( epoch > 0 ) {
-                  ret += "" + epoch;
+                  if( epoch - 1 < adjs.size() ) {
+                     ret =  adjs.get(perm(epoch - 1, adj.size()) + "_" + ret;
+                   }
+                   else {
+                     ret += epoch;
+                   }
                 }
                 return ret;
 	    }
@@ -128,6 +132,16 @@ public class ListRenamer implements Renamer, OptionHandler {
 		throw new UnsupportedOperationException();
 	    }
 	};
+    }
+
+    int perm(int i, int n, int off=0) 
+    {
+      int p = 1021;
+      if( n == 0 ) { 
+        return i;
+      }
+      int idx = (i*p+off)%n;
+      return idx;
     }
 }
 

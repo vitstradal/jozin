@@ -1,4 +1,5 @@
-JAVAC=javac -Xlint:none
+#JAVAC=javac -Xlint:unchecked
+JAVAC=javac
 FULL_CLASSPATH=.
 CLASSES= jode/bytecode/Reference.class \
         jode/bytecode/GrowableConstantPool.class \
@@ -86,7 +87,7 @@ CLASSES= jode/bytecode/Reference.class \
         jode/obfuscator/modules/WildCard.class \
         jode/obfuscator/modules/KeywordRenamer.class \
         jode/obfuscator/modules/StrongRenamer.class \
-        jode/obfuscator/modules/ListRenamer.class \
+        jode/obfuscator/modules/JozinRenamer.class \
         jode/obfuscator/modules/SimpleAnalyzer.class \
         jode/obfuscator/modules/MultiIdentifierMatcher.class \
         jode/obfuscator/modules/SerializePreserver.class \

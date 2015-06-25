@@ -61,7 +61,7 @@ public class Jozin {
 	new LongOpt("src", LongOpt.REQUIRED_ARGUMENT, null, 's'),
 	new LongOpt("load", LongOpt.REQUIRED_ARGUMENT, null, 'l'),
 	new LongOpt("classpath", LongOpt.REQUIRED_ARGUMENT, null, 'c'),
-	new LongOpt("destpath", LongOpt.REQUIRED_ARGUMENT, null, 'd'),
+	new LongOpt("output", LongOpt.REQUIRED_ARGUMENT, null, 'o'),
 	new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h'),
 	new LongOpt("version", LongOpt.NO_ARGUMENT, null, 'V'),
 	new LongOpt("verbose", LongOpt.OPTIONAL_ARGUMENT, null, 'v'),
@@ -90,13 +90,12 @@ public class Jozin {
 
     public static void usage() {
 	PrintWriter err = GlobalOptions.err;
-        err.println("usage:java  jode.Jozin -c in.jar [opts]");
+        err.println("usage:java  jode.Jozin [opts] in.jar");
 	err.println("  -h, --help           show this information.");
 	err.println("  -V, --version        output version information and exit.");
 	err.println("  -v, --verbose        be verbose (multiple times means more verbose).");
-	err.println("  -c, --classpath <path> search for classes in specified classpath.");
 	err.println("                       The directories should be separated by ','.");
-	err.println("  -d, --dest <dir>     write decompiled files to disk into directory destdir.");
+	err.println("  -o, --output <dir>     write decompiled files to disk into directory destdir.");
 	err.println("  -s, --src <dir>      write decompiled sources directory.");
 	err.println("  -D, --debug=...      use --debug=help for more information.");
     }
@@ -113,13 +112,14 @@ public class Jozin {
 	    return;
 	}
 	String cp = null;
-        String dest = "out.jar";
+        String output = "out.jar";
         String dir = null;
-        String load = "jode.*";
+        //String load = "jode.*";
+        String load = "*";
         String revtable = "out.tbl";
         String src_dir = null;
 
-        Renamer renamer = new ListRenamer();
+        Renamer renamer = new JozinRenamer();
         ConstantAnalyzer analyzer = new ConstantAnalyzer();
         //post = new LocalOptimizer, new RemovePopAnalyzer
 
@@ -151,8 +151,8 @@ public class Jozin {
 	    case 'c':
 		cp = g.getOptarg();
 		break;
-	    case 'd':
-		dest = g.getOptarg();
+	    case 'o':
+		output = g.getOptarg();
 		break;
 	    case 'x':
 		dir = g.getOptarg();
@@ -185,14 +185,22 @@ public class Jozin {
 		break;
 	    }
 	}
+
+        if (g.getOptind() != params.length - 1) {
+            System.err.println("You must specify exactly one jar.");
+            return;
+        }
+
+        cp = params[g.getOptind()];
+
 	if (errorInParams)
 	    return;
 
 	// Command Line overwrites script options:
 	if (cp != null)
 	    bundle.setOption("classpath", Collections.singleton(cp));
-	if (dest != null)
-	    bundle.setOption("dest", Collections.singleton(dest));
+	if (output != null)
+	    bundle.setOption("dest", Collections.singleton(output));
 
 	if (load != null)
 	    bundle.setOption("load", Collections.singleton(load));
@@ -241,10 +249,10 @@ public class Jozin {
 	            int importPackageLimit = ImportHandler.DEFAULT_PACKAGE_LIMIT;
                     int importClassLimit = ImportHandler.DEFAULT_CLASS_LIMIT;;
 
-		    ClassInfo.setClassPath(dest + Decompiler.altPathSeparatorChar + classPath);
+		    ClassInfo.setClassPath(output + Decompiler.altPathSeparatorChar + classPath);
 
 	            ImportHandler imports = new ImportHandler(importPackageLimit, importClassLimit);
-		    Enumeration eenum = new ZipFile(dest).entries();
+		    Enumeration eenum = new ZipFile(output).entries();
 		    while (eenum.hasMoreElements()) {
 			String entry = ((ZipEntry) eenum.nextElement()).getName();
 			if (entry.endsWith(".class")) {
@@ -254,7 +262,7 @@ public class Jozin {
 		    }
 		    //ClassInfo.setClassPath(classPath);
 	     } catch (IOException ex) {
-		GlobalOptions.err.println("Can't read zip file " + dest + ".");
+		GlobalOptions.err.println("Can't read zip file " + output + ".");
 		//ex.printStackTrace(GlobalOptions.err);
 	    }
         }
